@@ -1,0 +1,627 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Flashcard Verbi Irregolari Inglesi</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background-color: #e0ffff;
+            margin: 0;
+        }
+
+        .flashcard-container {
+            perspective: 1000px;
+            margin-bottom: 20px;
+        }
+
+        .flashcard {
+            width: 300px;
+            height: 200px;
+            position: relative;
+            transform-style: preserve-3d;
+            transition: transform 0.3s;
+            cursor: pointer;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .flashcard.flipped {
+            transform: rotateY(180deg);
+        }
+
+        .flashcard-face {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            backface-visibility: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            border-radius: 10px;
+            font-size: 1.5em;
+            text-align: center;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+
+        .flashcard-front {
+            background-color: #fff;
+            color: #333;
+        }
+
+        .flashcard-back {
+            background-color: #337ab7;
+            color: #fff;
+            transform: rotateY(180deg);
+			line-height: 37px;
+            white-space: pre-wrap; /* Per mantenere i ritorni a capo se presenti */
+        }
+
+        .controls button {
+            padding: 10px 20px;
+            font-size: 1em;
+            margin: 0 10px;
+            cursor: pointer;
+            border: none;
+            border-radius: 5px;
+            background-color: #008b8b;
+            color: white;
+            transition: all 0.3s ease;
+        }
+
+        .controls button:hover {
+            opacity: 0.9;
+        }
+		
+		.check {
+			padding: 10px 20px;
+            font-size: 1em;
+            margin: 20px 10px;
+            cursor: pointer;
+            border: none;
+            border-radius: 5px;
+            background-color: #228b22;
+            color: white;
+            transition: all 0.3s ease;
+            position: relative;
+		}
+		
+		.check:hover {
+			opacity: 0.9;
+		}
+		
+        .check.selected {
+            background-color: #32cd32;
+            box-shadow: 0 0 15px rgba(50, 205, 50, 0.6);
+            transform: scale(1.05);
+        }
+
+        .check.selected::after {
+            content: "✓";
+            position: absolute;
+            right: -10px;
+            top: -10px;
+            background-color: #fff;
+            color: #228b22;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-weight: bold;
+            font-size: 14px;
+        }
+		
+		.wrong {
+			padding: 10px 20px;
+            font-size: 1em;
+            margin: 20px 10px;
+            cursor: pointer;
+            border: none;
+            border-radius: 5px;
+            background-color: #b22222;
+            color: white;
+            transition: all 0.3s ease;
+            position: relative;
+		}
+		
+		.wrong:hover{
+			opacity: 0.9;
+		}
+
+        .wrong.selected {
+            background-color: #ff4444;
+            box-shadow: 0 0 15px rgba(255, 68, 68, 0.6);
+            transform: scale(1.05);
+        }
+
+        .wrong.selected::after {
+            content: "✗";
+            position: absolute;
+            right: -10px;
+            top: -10px;
+            background-color: #fff;
+            color: #b22222;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-weight: bold;
+            font-size: 14px;
+        }
+		
+		.box-container {
+            perspective: 1000px;
+            margin-bottom: 20px;
+        }
+
+        .box {
+            width: 300px;
+            height: 60px;
+            position: relative;
+            transform-style: preserve-3d;
+            transition: transform 0.3s;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .box.flipped {
+            transform: rotateY(180deg);
+        }
+		
+		.box-face {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            backface-visibility: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            border-radius: 10px;
+            font-size: 1.5em;
+            text-align: center;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+		
+		.box-front {
+			background-color: pink;
+			color: black;
+		}
+		
+		.box-back {
+			background-color: #ff69b4;
+			color: white;
+			transform: rotateY(180deg);
+		}
+
+        .score-container {
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            text-align: center;
+        }
+
+        .score-current {
+            font-size: 1.2em;
+            margin-bottom: 10px;
+        }
+
+        .score-final {
+            font-size: 1.5em;
+            color: #333;
+        }
+
+        .score-final h2 {
+            color: #008b8b;
+            margin-bottom: 20px;
+        }
+
+        .score-details {
+            display: flex;
+            justify-content: space-around;
+            margin: 20px 0;
+        }
+
+        .score-item {
+            text-align: center;
+        }
+
+        .score-number {
+            font-size: 2em;
+            font-weight: bold;
+            display: block;
+        }
+
+        .correct .score-number {
+            color: #228b22;
+        }
+
+        .incorrect .score-number {
+            color: #b22222;
+        }
+
+        .total .score-number {
+            color: #008b8b;
+        }
+
+        .percentage {
+            font-size: 1.8em;
+            font-weight: bold;
+            margin: 20px 0;
+            padding: 15px;
+            border-radius: 10px;
+            background-color: #f0f8ff;
+        }
+
+        .restart-button {
+            padding: 15px 30px;
+            font-size: 1.2em;
+            margin: 20px 10px;
+            cursor: pointer;
+            border: none;
+            border-radius: 5px;
+            background-color: #008b8b;
+            color: white;
+        }
+
+        .restart-button:hover {
+            opacity: 0.9;
+        }
+
+        #emptyMessage {
+            display: none;
+            color: #d9534f;
+            font-size: 1.2em;
+            margin-top: 20px;
+        }
+
+        #warningMessage {
+            display: none;
+            color: #ff6b35;
+            background-color: #fff3e0;
+            border: 2px solid #ff6b35;
+            border-radius: 8px;
+            padding: 15px;
+            margin: 20px;
+            font-size: 1.1em;
+            text-align: center;
+            box-shadow: 0 2px 4px rgba(255, 107, 53, 0.2);
+            animation: shake 0.5s ease-in-out;
+        }
+
+        @keyframes shake {
+            0%, 20%, 40%, 60%, 80%, 100% { transform: translateX(0); }
+            10%, 30%, 50%, 70%, 90% { transform: translateX(-5px); }
+        }
+    </style>
+</head>
+<body>
+
+    <h1>Ripassiamo i verbi irregolari inglesi!</h1>
+
+    <div class="score-container" id="scoreContainer" style="display: none;">
+        <div class="score-final" id="finalScore">
+            <h2>🎉 Hai completato tutti i verbi! 🎉</h2>
+            <div class="score-details">
+                <div class="score-item correct">
+                    <span class="score-number" id="finalCorrect">0</span>
+                    <div>Corrette</div>
+                </div>
+                <div class="score-item incorrect">
+                    <span class="score-number" id="finalIncorrect">0</span>
+                    <div>Sbagliate</div>
+                </div>
+                <div class="score-item total">
+                    <span class="score-number" id="finalTotal">0</span>
+                    <div>Totali</div>
+                </div>
+            </div>
+            <div class="percentage" id="finalPercentage">0%</div>
+            <button class="restart-button" onclick="location.reload()">Ricomincia</button>
+        </div>
+    </div>
+
+    <div class="box-container">
+        <div class="box" id="box">
+            <div class="box-face box-front" id="box-front-text">need a hand?</div>
+			<div class="box-face box-back" id="box-back-text"></div>
+        </div>
+    </div>
+	
+	<div class="flashcard-container">
+        <div class="flashcard" id="flashcard">
+            <div class="flashcard-face flashcard-front" id="front-text"></div>
+            <div class="flashcard-face flashcard-back" id="back-text"></div>
+        </div>
+    </div>
+
+    <div class="controls">
+        <button id="nextCardButton">Prossima Card</button>
+		<button id="showverb">Mostra forma base</button>
+    </div>
+	
+	<div>
+		<button class="check" id="okbutton"> Giusto! </button>
+		<button class="wrong" id="nobutton"> Sbagliato! </button>
+	</div>
+
+    <div id="warningMessage">⚠️ Devi prima valutare la tua risposta prima di passare alla prossima carta!</div>
+
+    <div id="emptyMessage">Non ci sono più verbi disponibili. Ricarica la pagina per ricominciare!</div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const flashcard = document.getElementById('flashcard');
+            const frontText = document.getElementById('front-text');
+            const backText = document.getElementById('back-text');
+			const box = document.getElementById('box');
+            const boxfrontText = document.getElementById('box-front-text');
+            const boxbackText = document.getElementById('box-back-text');
+            const nextCardButton = document.getElementById('nextCardButton');
+			const showverb = document.getElementById('showverb')
+            const emptyMessage = document.getElementById('emptyMessage');
+            const warningMessage = document.getElementById('warningMessage');
+			const okbutton = document.getElementById('okbutton');
+			const nobutton = document.getElementById('nobutton');
+
+            // Elementi per il punteggio
+            const scoreContainer = document.getElementById('scoreContainer');
+            const finalScore = document.getElementById('finalScore');
+            const finalCorrect = document.getElementById('finalCorrect');
+            const finalIncorrect = document.getElementById('finalIncorrect');
+            const finalTotal = document.getElementById('finalTotal');
+            const finalPercentage = document.getElementById('finalPercentage');
+
+            // Variabili per il punteggio
+            let correctAnswers = 0;
+            let incorrectAnswers = 0;
+            let currentAnswer = null; // Per tracciare la risposta attuale ('correct' o 'incorrect')
+
+            const verbsTxtContent = `be was/were been essere
+become became become diventare
+begin began begun iniziare
+bite bit bitten mordere
+blow blew blown soffiare
+break broke broken rompere
+bring brought brought portare
+build built built costruire
+burn burnt burnt bruciare
+buy bought bought comprare
+catch caught caught afferrare,prendere
+choose chose chosen scegliere
+come came come venire
+cost cost cost costare
+cut cut cut tagliare
+do did done fare
+draw drew drawn disegnare
+drink drank drunk bere
+drive drove driven guidare
+eat ate eaten mangiare
+fall fell fallen cadere
+feed fed fed nutrire
+feel felt felt sentire(sentimenti)
+fight fought fought lottare
+find found found trovare
+fly flew flown volare
+forget forgot forgotten dimenticare
+forgive forgave forgiven perdonare
+get got got ottenere
+give gave given dare
+go went gone andare
+grow grew grown crescere,coltivare
+have had had avere
+hear heard heard udire
+hit hit hit colpire
+hold held held tenere
+hurt hurt hurt ferire
+keep kept kept tenere
+know knew known sapere,conoscere
+lead led led condurre
+learn learnt learnt imparare
+leave left left lasciare,partire
+lend lent lent prestare
+let let let lasciare
+lie lay lay giacere
+lose lost lost perdere
+make made made fare
+mean meant meant significare
+<!-- meet met met incontrare -->
+<!-- pay paid paid pagare -->
+<!-- put put put mettere -->
+<!-- read read read leggere -->
+<!-- ride rode ridden cavalcare -->
+<!-- ring rang rung suonare -->
+<!-- rise rose risen salire -->
+<!-- run ran run correre -->
+<!-- say said said dire -->
+<!-- see saw seen vedere -->
+<!-- sell sold sold vendere -->
+<!-- send sent sent spedire -->
+<!-- set set set mettere -->
+<!-- shine shone shone brillare, splendere -->
+<!-- show showed shown mostrare -->
+<!-- shut shut shut chiudere -->
+<!-- sing sang sung cantare -->
+<!-- sit sat sat sedere -->
+<!-- sleep slept slept dormire -->
+<!-- smell smelt smelt odorare -->
+<!-- speak spoke spoken parlare -->
+<!-- spell spelt spelt sillabare -->
+<!-- spend spent spent spendere -->
+<!-- spin spun spun ruotare -->
+<!-- spread spread spread spargere -->
+<!-- stand stood stood stare -->
+<!-- steal stole stolen rubare -->
+<!-- swim swam swum nuotare -->
+<!-- take took taken prendere -->
+<!-- teach taught taught insegnare -->
+<!-- tell told told raccontare -->
+<!-- think thought thought pensare -->
+<!-- throw threw thrown gettare, buttare -->
+<!-- understand understood understood capire -->
+<!-- wake woke woken svegliare -->
+<!-- wear wore worn indossare -->
+<!-- win won won vincere -->
+<!-- write wrote written scrivere -->
+`; 
+
+            let verbs = [];
+            let currentVerbIndex = 0;
+
+            function parseVerbs(text) {
+                return text.split('\n')
+                           .map(line => line.trim())
+                           .filter(line => line.length > 0)
+                           .map(line => {
+                               const parts = line.split(' ');
+                               if (parts.length === 4) {
+                                   return {
+                                       italian: parts[3],
+                                       english: `${parts[0]}\n${parts[1]}\n${parts[2]}`,
+                                       baseForm: parts[0] // Aggiungo la forma base
+                                   };
+                               }
+                               return null;
+                           }).filter(verb => verb !== null);
+            }
+
+            function shuffleArray(array) {
+                for (let i = array.length - 1; i > 0; i--) {
+                    const j = Math.floor(Math.random() * (i + 1));
+                    [array[i], array[j]] = [array[j], array[i]];
+                }
+            }
+
+            function showFinalScore() {
+                const total = correctAnswers + incorrectAnswers;
+                const percentage = total > 0 ? Math.round((correctAnswers / total) * 100) : 0;
+                
+                finalCorrect.textContent = correctAnswers;
+                finalIncorrect.textContent = incorrectAnswers;
+                finalTotal.textContent = total;
+                finalPercentage.textContent = percentage + '%';
+                
+                scoreContainer.style.display = 'block';
+            }
+
+            function loadVerbs() {
+                verbs = parseVerbs(verbsTxtContent);
+                shuffleArray(verbs);
+                if (verbs.length > 0) {
+                    displayCard(verbs[currentVerbIndex]);
+                    emptyMessage.style.display = 'none';
+                } else {
+                    frontText.textContent = '';
+                    backText.textContent = '';
+                    emptyMessage.style.display = 'block';
+                    nextCardButton.disabled = true;
+                }
+            }
+
+            function displayCard(verb) {
+                flashcard.classList.remove('flipped');
+                frontText.textContent = verb.italian;
+                backText.textContent = verb.english;
+                currentAnswer = null; // Reset per la nuova carta
+                
+                // Rimuovi gli stati selezionati dai pulsanti
+                okbutton.classList.remove('selected');
+                nobutton.classList.remove('selected');
+                
+                // Nascondi il messaggio di avviso
+                warningMessage.style.display = 'none';
+                
+                // Reset del box suggerimento
+                boxfrontText.textContent = 'need a hand?';
+                boxbackText.textContent = verb.baseForm;
+                box.classList.remove('flipped');
+            }
+
+            function selectAnswer(type) {
+                // Prima rimuovi la selezione precedente
+                if (currentAnswer === 'correct') {
+                    correctAnswers--;
+                } else if (currentAnswer === 'incorrect') {
+                    incorrectAnswers--;
+                }
+
+                // Rimuovi le classi selected
+                okbutton.classList.remove('selected');
+                nobutton.classList.remove('selected');
+
+                // Imposta la nuova risposta
+                currentAnswer = type;
+
+                if (type === 'correct') {
+                    correctAnswers++;
+                    okbutton.classList.add('selected');
+                } else if (type === 'incorrect') {
+                    incorrectAnswers++;
+                    nobutton.classList.add('selected');
+                }
+            }
+
+            flashcard.addEventListener('click', () => {
+                flashcard.classList.toggle('flipped');
+            });
+
+            // Funzionalità per mostrare la forma base
+            showverb.addEventListener('click', () => {
+                box.classList.toggle('flipped');
+            });
+
+            // Gestione pulsanti giusto/sbagliato
+            okbutton.addEventListener('click', () => {
+                selectAnswer('correct');
+            });
+
+            nobutton.addEventListener('click', () => {
+                selectAnswer('incorrect');
+            });
+
+            nextCardButton.addEventListener('click', () => {
+                // Controlla se l'utente ha selezionato una risposta
+                if (currentAnswer === null) {
+                    warningMessage.style.display = 'block';
+                    // Nascondi il messaggio dopo 3 secondi
+                    setTimeout(() => {
+                        warningMessage.style.display = 'none';
+                    }, 3000);
+                    return; // Blocca il passaggio alla carta successiva
+                }
+
+                currentVerbIndex++;
+                if (currentVerbIndex < verbs.length) {
+                    displayCard(verbs[currentVerbIndex]);
+                } else {
+                    frontText.textContent = '';
+                    backText.textContent = '';
+                    boxfrontText.textContent = '';
+                    boxbackText.textContent = '';
+                    nextCardButton.disabled = true;
+                    showverb.disabled = true;
+                    okbutton.disabled = true;
+                    nobutton.disabled = true;
+                    showFinalScore();
+                }
+            });
+
+            // Carica i verbi all'avvio
+            loadVerbs();
+        });
+    </script>
+</body>
+</html>
