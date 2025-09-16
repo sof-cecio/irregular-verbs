@@ -281,6 +281,41 @@
             opacity: 0.9;
         }
 
+        .wrong-verbs-section {
+            margin-top: 30px;
+            padding: 20px;
+            background-color: #fff5f5;
+            border-radius: 10px;
+            border: 2px solid #ffcdd2;
+        }
+
+        .wrong-verbs-section h3 {
+            color: #b22222;
+            margin-bottom: 15px;
+            font-size: 1.3em;
+        }
+
+        .wrong-verbs-list {
+            text-align: left;
+            max-width: 500px;
+        }
+
+        .wrong-verb-item {
+            background-color: #fff;
+            margin: 5px 0;
+            padding: 8px 12px;
+            border-radius: 5px;
+            border-left: 4px solid #b22222;
+            font-family: monospace;
+            font-size: 1em;
+        }
+
+        .no-wrong-verbs {
+            color: #228b22;
+            font-style: italic;
+            font-size: 1.1em;
+        }
+
         #emptyMessage {
             display: none;
             color: #d9534f;
@@ -330,6 +365,13 @@
                 </div>
             </div>
             <div class="percentage" id="finalPercentage">0%</div>
+            
+            <div class="wrong-verbs-section" id="wrongVerbsSection">
+                <h3>📋 Verbi da ripassare:</h3>
+                <div class="wrong-verbs-list" id="wrongVerbsList">
+                </div>
+            </div>
+            
             <button class="restart-button" onclick="location.reload()">Ricomincia</button>
         </div>
     </div>
@@ -384,11 +426,14 @@
             const finalIncorrect = document.getElementById('finalIncorrect');
             const finalTotal = document.getElementById('finalTotal');
             const finalPercentage = document.getElementById('finalPercentage');
+            const wrongVerbsSection = document.getElementById('wrongVerbsSection');
+            const wrongVerbsList = document.getElementById('wrongVerbsList');
 
             // Variabili per il punteggio
             let correctAnswers = 0;
             let incorrectAnswers = 0;
             let currentAnswer = null; // Per tracciare la risposta attuale ('correct' o 'incorrect')
+            let wrongVerbs = []; // Array per i verbi sbagliati
 
             const verbsTxtContent = `be was/were been essere
 become became become diventare
@@ -491,7 +536,10 @@ write wrote written scrivere
                                    return {
                                        italian: parts[3],
                                        english: `${parts[0]}\n${parts[1]}\n${parts[2]}`,
-                                       baseForm: parts[0] // Aggiungo la forma base
+                                       baseForm: parts[0],
+                                       pastForm: parts[1],
+                                       pastParticiple: parts[2],
+                                       fullParadigm: `${parts[3]} - ${parts[0]} - ${parts[1]} - ${parts[2]}`
                                    };
                                }
                                return null;
@@ -505,6 +553,17 @@ write wrote written scrivere
                 }
             }
 
+            function displayWrongVerbs() {
+                if (wrongVerbs.length === 0) {
+                    wrongVerbsList.innerHTML = '<div class="no-wrong-verbs">🎉 Perfetto! Non hai sbagliato nessun verbo!</div>';
+                } else {
+                    const wrongVerbsHTML = wrongVerbs.map(verb => 
+                        `<div class="wrong-verb-item">${verb.fullParadigm}</div>`
+                    ).join('');
+                    wrongVerbsList.innerHTML = wrongVerbsHTML;
+                }
+            }
+
             function showFinalScore() {
                 const total = correctAnswers + incorrectAnswers;
                 const percentage = total > 0 ? Math.round((correctAnswers / total) * 100) : 0;
@@ -513,6 +572,9 @@ write wrote written scrivere
                 finalIncorrect.textContent = incorrectAnswers;
                 finalTotal.textContent = total;
                 finalPercentage.textContent = percentage + '%';
+                
+                // Mostra i verbi sbagliati
+                displayWrongVerbs();
                 
                 scoreContainer.style.display = 'block';
             }
@@ -551,11 +613,17 @@ write wrote written scrivere
             }
 
             function selectAnswer(type) {
+                const currentVerb = verbs[currentVerbIndex];
+                
                 // Prima rimuovi la selezione precedente
                 if (currentAnswer === 'correct') {
                     correctAnswers--;
+                    // Rimuovi il verbo dall'array dei verbi sbagliati se era stato aggiunto precedentemente
+                    wrongVerbs = wrongVerbs.filter(verb => verb.fullParadigm !== currentVerb.fullParadigm);
                 } else if (currentAnswer === 'incorrect') {
                     incorrectAnswers--;
+                    // Rimuovi il verbo dall'array dei verbi sbagliati
+                    wrongVerbs = wrongVerbs.filter(verb => verb.fullParadigm !== currentVerb.fullParadigm);
                 }
 
                 // Rimuovi le classi selected
@@ -571,6 +639,10 @@ write wrote written scrivere
                 } else if (type === 'incorrect') {
                     incorrectAnswers++;
                     nobutton.classList.add('selected');
+                    // Aggiungi il verbo all'array dei verbi sbagliati se non è già presente
+                    if (!wrongVerbs.some(verb => verb.fullParadigm === currentVerb.fullParadigm)) {
+                        wrongVerbs.push(currentVerb);
+                    }
                 }
             }
 
@@ -601,6 +673,15 @@ write wrote written scrivere
                         warningMessage.style.display = 'none';
                     }, 3000);
                     return; // Blocca il passaggio alla carta successiva
+                }
+
+                // Aggiungi il verbo all'array dei verbi sbagliati se la risposta finale è "incorrect"
+                if (currentAnswer === 'incorrect') {
+                    const currentVerb = verbs[currentVerbIndex];
+                    // Aggiungi il verbo solo se non è già presente nell'array
+                    if (!wrongVerbs.some(verb => verb.fullParadigm === currentVerb.fullParadigm)) {
+                        wrongVerbs.push(currentVerb);
+                    }
                 }
 
                 currentVerbIndex++;
